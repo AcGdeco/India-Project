@@ -16,26 +16,32 @@ with BuildPart() as peca:
 
     loft()
 
-    # --- 2. PRIMEIRA PAREDE (2mm) ---
+   # --- 2. PRIMEIRA PAREDE (2mm de espessura constante) ---
     altura_1 = 6.6
     plano_topo_parede1 = Plane.XY.offset(3 + altura_1)
 
     with BuildSketch(plano_topo_loft) as sk1:
+        # 1. Perímetro Externo
         Rectangle(53, 135)
-        chamfer(vertices(), length=10.429)
+        chamfer(vertices(), length=10.429) 
+        
+        # 2. Perímetro Interno (Subtração para criar a parede)
         with BuildSketch(mode=Mode.SUBTRACT):
+            # Recuo de 2mm em cada lado (53-4 e 135-4)
             Rectangle(53 - 4, 135 - 4)
-            chamfer(vertices(), length=8.429)
+            # Para 2mm reais no chanfro de 45 graus: 10.429 - (2 * sqrt(2))
+            chamfer(vertices(), length=9.258)
+
     extrude(amount=altura_1)
 
     # --- 3. SEGUNDA PAREDE (1mm INTERNA) ---
-    with BuildSketch(plano_topo_parede1) as sk2:
-        Rectangle(53 - 4, 135 - 4)
-        chamfer(vertices(), length=8.429)
-        with BuildSketch(mode=Mode.SUBTRACT):
-            Rectangle(53 - 6, 135 - 6)
-            chamfer(vertices(), length=7.429)
-    extrude(amount=9.824)
+    # --- with BuildSketch(plano_topo_parede1) as sk2:
+    # ---     Rectangle(53 - 2, 135 - 2)
+    # ---     chamfer(vertices(), length=9.429)
+    # ---     with BuildSketch(mode=Mode.SUBTRACT):
+    # ---         Rectangle(53 - 4, 135 - 4)
+    # ---         chamfer(vertices(), length=8.429)
+    # --- extrude(amount=9.824)
 
     # --- 4. O CILINDRO (Pilar interno) ---
     # Usamos Locations para colocar o cilindro onde ele seja visível.
