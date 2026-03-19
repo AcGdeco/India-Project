@@ -35,13 +35,14 @@ with BuildPart() as peca:
     extrude(amount=altura_1)
 
     # --- 3. SEGUNDA PAREDE (1mm INTERNA) ---
-    # --- with BuildSketch(plano_topo_parede1) as sk2:
-    # ---     Rectangle(53 - 2, 135 - 2)
-    # ---     chamfer(vertices(), length=9.429)
-    # ---     with BuildSketch(mode=Mode.SUBTRACT):
-    # ---         Rectangle(53 - 4, 135 - 4)
-    # ---         chamfer(vertices(), length=8.429)
-    # --- extrude(amount=9.824)
+    with BuildSketch(plano_topo_parede1) as sk2:
+        Rectangle(53 - 2, 135 - 2)
+        chamfer(vertices(), length=9.845)
+        with BuildSketch(mode=Mode.SUBTRACT):
+            Rectangle(53 - 4, 135 - 4)
+            # Offset interno de 1mm mantendo espessura constante no chanfro de 45 graus
+            chamfer(vertices(), length=9.258)
+    extrude(amount=9.824)
 
     # --- 4. O CILINDRO (Pilar interno) ---
     # Usamos Locations para colocar o cilindro onde ele seja visível.
