@@ -2,7 +2,7 @@ from build123d import *
 from ocp_vscode import show
 
 # Criando uma peça com um cilindro e um tronco de cilindro no topo
-with BuildPart() as peca_teste:
+with BuildPart() as button:
     # Base do cilindro principal
     Cylinder(
         radius=4.8,
@@ -56,4 +56,4 @@ with BuildPart() as peca_teste:
         )  
 
 # Envia a peça para o painel lateral do VS Code
-show(peca_teste)
+show(button)
