@@ -1,39 +1,56 @@
 from build123d import *
 from ocp_vscode import show
 
-# Criando uma peça base com loft e cantos chanfrados (reta nos vértices)
 with BuildPart() as peca:
-    # 1. Definimos os Planos
-    # O primeiro no chão (Z=0) e o segundo no topo (Z=3)
+    # --- 1. CORPO BASE (LOFT) ---
     plano_base = Plane.XY
-    plano_topo = Plane.XY.offset(3) # Altura de 3mm conforme seu comentário
+    plano_topo_loft = Plane.XY.offset(3) 
 
-    # 2. Desenhamos e Chanframos os retângulos nesses planos
-
-    # Sketch da BASE (Z=0)
     with BuildSketch(plano_base) as s1:
-        # Criamos o retângulo base (47 x 129 mm)
         r1 = Rectangle(47, 129)
-        # Seleciona os Vértices (os pontos) do r1 e aplica o chanfro.
-        # ISSO CRIA A RETA DE 2.0mm NO LUGAR DO PONTO.
-        # No OCP Viewer, você verá o canto cortado.
         chamfer(r1.vertices(), length=8.671)
     
-    # Sketch do TOPO (Z=3)
-    with BuildSketch(plano_topo) as s2:
-        # Criamos o retângulo do topo (53 x 135 mm)
+    with BuildSketch(plano_topo_loft) as s2:
         r2 = Rectangle(53, 135)
-        # Aplicamos o mesmo chanfro de 2.0mm no topo.
-        # Se você quisesse um valor diferente no topo, mudaria aqui.
         chamfer(r2.vertices(), length=10.429)
 
-    # 3. O comando loft (minúsculo) une reta com reta, reta com reta.
-    # O resultado será um sólido inclinado com cantos planos.
     loft()
 
-    # O move para (0,0,0) é desnecessário aqui, pois o loft é criado
-    # centralizado no (0,0,0) por padrão se os planos forem offset simples.
-    # peca.part.move(Location((0, 0, 0)))
+    # --- 2. PRIMEIRA PAREDE (2mm) ---
+    altura_1 = 6.6
+    plano_topo_parede1 = Plane.XY.offset(3 + altura_1)
 
-# Envia a peça para o painel lateral do VS Code (OCP CAD Viewer)
+    with BuildSketch(plano_topo_loft) as sk1:
+        Rectangle(53, 135)
+        chamfer(vertices(), length=10.429)
+        with BuildSketch(mode=Mode.SUBTRACT):
+            Rectangle(53 - 4, 135 - 4)
+            chamfer(vertices(), length=8.429)
+    extrude(amount=altura_1)
+
+    # --- 3. SEGUNDA PAREDE (1mm INTERNA) ---
+    with BuildSketch(plano_topo_parede1) as sk2:
+        Rectangle(53 - 4, 135 - 4)
+        chamfer(vertices(), length=8.429)
+        with BuildSketch(mode=Mode.SUBTRACT):
+            Rectangle(53 - 6, 135 - 6)
+            chamfer(vertices(), length=7.429)
+    extrude(amount=9.824)
+
+    # --- 4. O CILINDRO (Pilar interno) ---
+    # Usamos Locations para colocar o cilindro onde ele seja visível.
+    # Exemplo: movido 20mm no eixo Y e começando acima da base (Z=3)
+    with Locations((12.5, 52.5, 3)):
+        Cylinder(
+            radius=2.5,
+            height=3, # Aumentei a altura para ele sobressair
+            align=(Align.CENTER, Align.CENTER, Align.MIN)
+        )
+
+# Visualização
 show(peca)
+
+# 1. Exportando a peça completa (o sólido resultante)
+export_step(peca.part, "bottom_shell.step")
+
+print("Sucesso! O arquivo 'bottom_shell.step' foi criado na sua pasta.")

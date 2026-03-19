@@ -84,6 +84,6 @@ with BuildPart() as dpad:
 
         # Para posicionar no seu projeto na altura específica:
         peca.part.move(Location((0, 0, - 4.5)))
-
+    
 # Envia a peça para o painel lateral do VS Code
 show(dpad)
