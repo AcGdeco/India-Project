@@ -2,168 +2,124 @@ from build123d import *
 from ocp_vscode import show
 
 with BuildPart() as peca:
-    # --- 1. CORPO BASE (LOFT) ---
-    plano_base = Plane.XY
-    plano_topo_loft = Plane.XY.offset(3) 
+    # --- 1. BASE BODY (LOFT) ---
+    # Define working planes for the loft operation
+    base_plane = Plane.XY
+    loft_top_plane = Plane.XY.offset(3) 
 
-    with BuildSketch(plano_base) as s1:
+    # Sketch for the bottom face
+    with BuildSketch(base_plane) as s1:
         r1 = Rectangle(47, 129)
         chamfer(r1.vertices(), length=8.671)
     
-    with BuildSketch(plano_topo_loft) as s2:
+    # Sketch for the top face of the loft
+    with BuildSketch(loft_top_plane) as s2:
         r2 = Rectangle(53, 135)
         chamfer(r2.vertices(), length=10.429)
 
     loft()
 
-   # --- 2. PRIMEIRA PAREDE (2mm de espessura constante) ---
-    altura_1 = 6.6
-    plano_topo_parede1 = Plane.XY.offset(3 + altura_1)
+    # --- 2. FIRST WALL (2mm Constant Thickness) ---
+    # Height for the first vertical section
+    height_1 = 6.6
+    wall1_top_plane = Plane.XY.offset(3 + height_1)
 
-    with BuildSketch(plano_topo_loft) as sk1:
-        # 1. Perímetro Externo
+    with BuildSketch(loft_top_plane) as sk1:
+        # External perimeter
         Rectangle(53, 135)
         chamfer(vertices(), length=10.429) 
         
-        # 2. Perímetro Interno (Subtração para criar a parede)
+        # Internal perimeter (Subtraction to create the wall)
         with BuildSketch(mode=Mode.SUBTRACT):
-            # Recuo de 2mm em cada lado (53-4 e 135-4)
+            # 2mm offset on each side
             Rectangle(53 - 4, 135 - 4)
-            # Para 2mm reais no chanfro de 45 graus: 10.429 - (2 * sqrt(2))
+            # Calculated chamfer length for constant 2mm thickness at 45 degrees
             chamfer(vertices(), length=9.258)
 
-    extrude(amount=altura_1)
+    extrude(amount=height_1)
 
-    # --- 3. SEGUNDA PAREDE (1mm INTERNA) ---
-    with BuildSketch(plano_topo_parede1) as sk2:
+    # --- 3. SECOND WALL (1mm Internal Step) ---
+    with BuildSketch(wall1_top_plane) as sk2:
+        # Outer boundary of the second wall
         Rectangle(53 - 2, 135 - 2)
         chamfer(vertices(), length=9.845)
+        
         with BuildSketch(mode=Mode.SUBTRACT):
+            # Inner boundary to maintain 1mm constant thickness
             Rectangle(53 - 4, 135 - 4)
-            # Offset interno de 1mm mantendo espessura constante no chanfro de 45 graus
             chamfer(vertices(), length=9.258)
+            
     extrude(amount=9.824)
 
-    # --- 4. O CILINDRO (Pilar interno) ---
-    # Usamos Locations para colocar o cilindro onde ele seja visível.
-    # Exemplo: movido 20mm no eixo Y e começando acima da base (Z=3)
+    # --- 4. INTERNAL SUPPORT PILLARS ---
+    # Positioning cylinders for structural support or mounting points
+    
+    # Top Right Pillar
     with Locations((13.5, 52.5, 3)):
-        Cylinder(
-            radius=2.5,
-            height=3, # Aumentei a altura para ele sobressair
-            align=(Align.CENTER, Align.CENTER, Align.MIN)
-        )
-
+        Cylinder(radius=2.5, height=3, align=(Align.CENTER, Align.CENTER, Align.MIN))
     with Locations((13.5, 52.5, 6)):
-        Cylinder(
-            radius=1,
-            height=13.424, 
-            align=(Align.CENTER, Align.CENTER, Align.MIN)
-        )
+        Cylinder(radius=1, height=13.424, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
+    # Top Left Pillar
     with Locations((-11.5, 52.5, 3)):
-        Cylinder(
-            radius=2.5,
-            height=3, # Aumentei a altura para ele sobressair
-            align=(Align.CENTER, Align.CENTER, Align.MIN)
-        )
-
+        Cylinder(radius=2.5, height=3, align=(Align.CENTER, Align.CENTER, Align.MIN))
     with Locations((-11.5, 52.5, 6)):
-        Cylinder(
-            radius=1,
-            height=13.424, 
-            align=(Align.CENTER, Align.CENTER, Align.MIN)
-        )
+        Cylinder(radius=1, height=13.424, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
+    # Bottom Right Pillar
     with Locations((13.5, -52.5, 3)):
-        Cylinder(
-            radius=2.5,
-            height=3, # Aumentei a altura para ele sobressair
-            align=(Align.CENTER, Align.CENTER, Align.MIN)
-        )
-
+        Cylinder(radius=2.5, height=3, align=(Align.CENTER, Align.CENTER, Align.MIN))
     with Locations((13.5, -52.5, 6)):
-        Cylinder(
-            radius=1,
-            height=13.424, 
-            align=(Align.CENTER, Align.CENTER, Align.MIN)
-        )
+        Cylinder(radius=1, height=13.424, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
+    # Bottom Left Pillar
     with Locations((-11.5, -52.5, 3)):
-        Cylinder(
-            radius=2.5,
-            height=3, # Aumentei a altura para ele sobressair
-            align=(Align.CENTER, Align.CENTER, Align.MIN)
-        )
-
+        Cylinder(radius=2.5, height=3, align=(Align.CENTER, Align.CENTER, Align.MIN))
     with Locations((-11.5, -52.5, 6)):
-        Cylinder(
-            radius=1,
-            height=13.424, 
-            align=(Align.CENTER, Align.CENTER, Align.MIN)
-        )
+        Cylinder(radius=1, height=13.424, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
+    # Central Pillar
     with Locations((-11.5, 0, 3)):
-        Cylinder(
-            radius=4,
-            height=3, # Aumentei a altura para ele sobressair
-            align=(Align.CENTER, Align.CENTER, Align.MIN)
-        )
-
+        Cylinder(radius=4, height=3, align=(Align.CENTER, Align.CENTER, Align.MIN))
     with Locations((-11.5, 0, 6)):
-        Cylinder(
-            radius=2.5,
-            height=13.424, 
-            align=(Align.CENTER, Align.CENTER, Align.MIN)
-        )
+        Cylinder(radius=2.5, height=13.424, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
-    plano_elipse = Plane.XY.offset(3)
+    # --- 5. ELLIPTICAL STRUCTURES ---
+    ellipse_plane = Plane.XY.offset(3)
 
-    with BuildSketch(plano_elipse) as s_elipse:
-        with Locations((1, 38)): # Posição X, Y no plano
-            # Desenha a elipse externa
+    # Positive Y Ellipse
+    with BuildSketch(ellipse_plane) as s_elipse1:
+        with Locations((1, 38)):
             Ellipse(9, 10.5)
-            
-            # Subtrai a elipse interna para criar a parede de 2mm
-            # (11-2 = 9 no eixo X e 9-2 = 7 no eixo Y)
             with BuildSketch(mode=Mode.SUBTRACT):
                 with Locations((1, 38)):
                     Ellipse(8, 9.5)
-
-    # Extrusão da "moldura" elíptica
     extrude(amount=3)
 
-    plano_elipse = Plane.XY.offset(3)
-
-    with BuildSketch(plano_elipse) as s_elipse:
-        with Locations((1, -38)): # Posição X, Y no plano
-            # Desenha a elipse externa
+    # Negative Y Ellipse
+    with BuildSketch(ellipse_plane) as s_elipse2:
+        with Locations((1, -38)):
             Ellipse(9, 10.5)
-            
-            # Subtrai a elipse interna para criar a parede de 2mm
-            # (11-2 = 9 no eixo X e 11-2 = 9 no eixo Y)
             with BuildSketch(mode=Mode.SUBTRACT):
                 with Locations((1, -38)):
                     Ellipse(8, 9.5)
-
-    # Extrusão da "moldura" elíptica
     extrude(amount=3)
 
-    # --- SUBTRAÇÃO DE RASGO COM EXTRUDE ---
-    # Criamos um plano de trabalho na altura Z=4.6
-    plano_rasgo = Plane.XY.offset(4.6)
+    # --- 6. SLOT SUBTRACTION (EXTRUDE CUT) ---
+    # Create a slot starting at Z=4.6
+    slot_plane = Plane.XY.offset(4.6)
     
-    with BuildSketch(plano_rasgo, mode=Mode.SUBTRACT) as s_corte:
+    with BuildSketch(slot_plane, mode=Mode.SUBTRACT) as s_cut:
         with Locations((25.5, 0)):
             Rectangle(2, 37.039)
     
-    # O extrude aqui vai "perfurar" a peça 14.824mm para cima
+    # Perforate the part 14.824mm upwards
     extrude(amount=14.824, mode=Mode.SUBTRACT)
 
-# Visualização
+# Visualization in VS Code
 show(peca)
 
-# 1. Exportando a peça completa (o sólido resultante)
+# Export the resulting solid to STEP format
 export_step(peca.part, "bottom_shell.step")
 
-print("Sucesso! O arquivo 'bottom_shell.step' foi criado na sua pasta.")
+print("Success! The file 'bottom_shell.step' has been created in your workspace.")

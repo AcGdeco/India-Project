@@ -1,16 +1,15 @@
 from build123d import *
 from ocp_vscode import show
 
-# Criando uma peça com um cilindro e um tronco de cilindro no topo
 with BuildPart() as button:
-    # Base do cilindro principal
+    # Main cylindrical shaft
     Cylinder(
         radius=4.8,
         height=14.5,
         align=(Align.CENTER, Align.CENTER, Align.MIN),
     )
 
-    # Tronco no topo: base 4.8 mm, topo 3.8 mm, altura 5 mm
+    # Tapered top surface (truncated cone)
     with Locations((0, 0, 14.5)):
         Cone(
             bottom_radius=4.8,
@@ -19,7 +18,7 @@ with BuildPart() as button:
             align=(Align.CENTER, Align.CENTER, Align.MIN),
         )
 
-    # Base do box lateral
+    # Positive X-axis lateral guide tab
     with Locations((5.315, 0, 0)):
         Box(
             1.2, 
@@ -28,7 +27,7 @@ with BuildPart() as button:
             align=(Align.CENTER, Align.CENTER, Align.MIN)
         )
 
-    # Base do box lateral
+    # Negative X-axis lateral guide tab
     with Locations((-5.315, 0, 0)):
         Box(
             1.2, 
@@ -37,7 +36,7 @@ with BuildPart() as button:
             align=(Align.CENTER, Align.CENTER, Align.MIN)
         )    
 
-    # Base do box lateral
+    # Positive Y-axis lateral guide tab
     with Locations((0, 5.315, 0)):
         Box(
             1.8,
@@ -46,7 +45,7 @@ with BuildPart() as button:
             align=(Align.CENTER, Align.CENTER, Align.MIN)
         )   
 
-    # Base do box lateral
+    # Negative Y-axis lateral guide tab
     with Locations((0, -5.315, 0)):
         Box(
             1.8,
@@ -55,5 +54,5 @@ with BuildPart() as button:
             align=(Align.CENTER, Align.CENTER, Align.MIN)
         )  
 
-# Envia a peça para o painel lateral do VS Code
+# Push the final geometry to the OCP Viewer
 show(button)
