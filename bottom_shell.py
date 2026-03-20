@@ -47,12 +47,118 @@ with BuildPart() as peca:
     # --- 4. O CILINDRO (Pilar interno) ---
     # Usamos Locations para colocar o cilindro onde ele seja visível.
     # Exemplo: movido 20mm no eixo Y e começando acima da base (Z=3)
-    with Locations((12.5, 52.5, 3)):
+    with Locations((13.5, 52.5, 3)):
         Cylinder(
             radius=2.5,
             height=3, # Aumentei a altura para ele sobressair
             align=(Align.CENTER, Align.CENTER, Align.MIN)
         )
+
+    with Locations((13.5, 52.5, 6)):
+        Cylinder(
+            radius=1,
+            height=13.424, 
+            align=(Align.CENTER, Align.CENTER, Align.MIN)
+        )
+
+    with Locations((-11.5, 52.5, 3)):
+        Cylinder(
+            radius=2.5,
+            height=3, # Aumentei a altura para ele sobressair
+            align=(Align.CENTER, Align.CENTER, Align.MIN)
+        )
+
+    with Locations((-11.5, 52.5, 6)):
+        Cylinder(
+            radius=1,
+            height=13.424, 
+            align=(Align.CENTER, Align.CENTER, Align.MIN)
+        )
+
+    with Locations((13.5, -52.5, 3)):
+        Cylinder(
+            radius=2.5,
+            height=3, # Aumentei a altura para ele sobressair
+            align=(Align.CENTER, Align.CENTER, Align.MIN)
+        )
+
+    with Locations((13.5, -52.5, 6)):
+        Cylinder(
+            radius=1,
+            height=13.424, 
+            align=(Align.CENTER, Align.CENTER, Align.MIN)
+        )
+
+    with Locations((-11.5, -52.5, 3)):
+        Cylinder(
+            radius=2.5,
+            height=3, # Aumentei a altura para ele sobressair
+            align=(Align.CENTER, Align.CENTER, Align.MIN)
+        )
+
+    with Locations((-11.5, -52.5, 6)):
+        Cylinder(
+            radius=1,
+            height=13.424, 
+            align=(Align.CENTER, Align.CENTER, Align.MIN)
+        )
+
+    with Locations((-11.5, 0, 3)):
+        Cylinder(
+            radius=4,
+            height=3, # Aumentei a altura para ele sobressair
+            align=(Align.CENTER, Align.CENTER, Align.MIN)
+        )
+
+    with Locations((-11.5, 0, 6)):
+        Cylinder(
+            radius=2.5,
+            height=13.424, 
+            align=(Align.CENTER, Align.CENTER, Align.MIN)
+        )
+
+    plano_elipse = Plane.XY.offset(3)
+
+    with BuildSketch(plano_elipse) as s_elipse:
+        with Locations((1, 38)): # Posição X, Y no plano
+            # Desenha a elipse externa
+            Ellipse(9, 10.5)
+            
+            # Subtrai a elipse interna para criar a parede de 2mm
+            # (11-2 = 9 no eixo X e 9-2 = 7 no eixo Y)
+            with BuildSketch(mode=Mode.SUBTRACT):
+                with Locations((1, 38)):
+                    Ellipse(8, 9.5)
+
+    # Extrusão da "moldura" elíptica
+    extrude(amount=3)
+
+    plano_elipse = Plane.XY.offset(3)
+
+    with BuildSketch(plano_elipse) as s_elipse:
+        with Locations((1, -38)): # Posição X, Y no plano
+            # Desenha a elipse externa
+            Ellipse(9, 10.5)
+            
+            # Subtrai a elipse interna para criar a parede de 2mm
+            # (11-2 = 9 no eixo X e 11-2 = 9 no eixo Y)
+            with BuildSketch(mode=Mode.SUBTRACT):
+                with Locations((1, -38)):
+                    Ellipse(8, 9.5)
+
+    # Extrusão da "moldura" elíptica
+    extrude(amount=3)
+
+    # --- SUBTRAÇÃO DE RASGO COM EXTRUDE ---
+    # Criamos um plano de trabalho na altura Z=4.6
+    plano_rasgo = Plane.XY.offset(4.6)
+    
+    with BuildSketch(plano_rasgo, mode=Mode.SUBTRACT) as s_corte:
+        with Locations((25.5, 0)):
+            Rectangle(2, 37.039)
+    
+    # O extrude aqui vai "perfurar" a peça 14.824mm para cima
+    extrude(amount=14.824, mode=Mode.SUBTRACT)
 
 # Visualização
 show(peca)
