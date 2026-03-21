@@ -117,6 +117,9 @@ with BuildPart() as peca:
     # Perforate the part 14.824mm upwards
     extrude(amount=14.824, mode=Mode.SUBTRACT)
 
+# 1. Aplica a rotação de 90 graus no eixo Z
+peca = peca.part.rotate(Axis.Z, 90)
+
 # Visualization in VS Code
 show(peca)
 
@@ -126,4 +129,4 @@ export_step(peca.part, "bottom_shell.step")
 print("Success! The file 'bottom_shell.step' has been created in your workspace.")
 
 # Validação (Lembre-se de girar o STL no Inventor também para bater)
-result = check_geometric_identity(peca, "RetroPad - Bottom_Shell.stl")
+result = check_geometric_identity(peca, "RetroPad - Bottom Shell.stl")
