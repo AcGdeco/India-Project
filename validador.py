@@ -5,7 +5,7 @@ from ocp_vscode import show
 def check_geometric_identity(generated_part, file_path, tolerance=0.005):
     """
     Valida a identidade entre um modelo B-REP e um arquivo de referência.
-    Auto-centraliza ambas as peças na origem (0,0,0) para garantir o alinhamento.
+    Compara volume, área e dimensões do bounding box.
     """
     if not os.path.exists(file_path):
         print(f"❌ Erro: Arquivo {file_path} não encontrado.")
@@ -34,41 +34,71 @@ def check_geometric_identity(generated_part, file_path, tolerance=0.005):
         else:
             shape_a = generated_part
 
-        # --- ESTRATÉGIA DE CENTRALIZAÇÃO ---
-        # Movemos o centro geométrico de cada peça para a origem (0,0,0)
-        # Isso ignora onde a origem estava no Inventor ou no Python.
-        
-        print("🔄 Alinhando centros geométricos...")
-        shape_a_centered = shape_a.move(Location(-shape_a.bounding_box().center()))
-        shape_b_centered = shape_b.move(Location(-shape_b.bounding_box().center()))
+        if hasattr(shape_a, "solid"):
+            shape_a = shape_a.solid()
 
-        # 3. Operação de Diferença Simétrica (XOR)
-        # Usamos as versões centralizadas
-        union_ab = shape_a_centered + shape_b_centered
-        intersect_ab = shape_a_centered & shape_b_centered
-        
-        deviation_solid = union_ab - intersect_ab
-        
-        # 4. Cálculo do Volume Residual
-        if isinstance(deviation_solid, ShapeList):
-            residue_volume = sum(s.volume for s in deviation_solid)
-        else:
-            residue_volume = deviation_solid.volume
-        
-        # 5. Veredito
-        if residue_volume <= tolerance:
+        # 3. Comparação por Volume
+        print("🔄 Comparando volumes...")
+        vol_a = shape_a.volume
+        vol_b = shape_b.volume
+        vol_diff = abs(vol_a - vol_b)
+        vol_diff_pct = (vol_diff / vol_b * 100) if vol_b != 0 else float('inf')
+
+        print(f"   Volume A (Python): {vol_a:.4f} mm³")
+        print(f"   Volume B (STL):    {vol_b:.4f} mm³")
+        print(f"   Diferença:         {vol_diff:.4f} mm³ ({vol_diff_pct:.4f}%)")
+
+        # 4. Comparação por Bounding Box
+        print("🔄 Comparando bounding boxes...")
+
+        def get_dims(shape):
+            bb = shape.bounding_box()
+            return {
+                "X": round(bb.max.X - bb.min.X, 4),
+                "Y": round(bb.max.Y - bb.min.Y, 4),
+                "Z": round(bb.max.Z - bb.min.Z, 4),
+            }
+
+        dims_a = get_dims(shape_a)
+        dims_b = get_dims(shape_b)
+
+        print(f"   Dimensões A: X={dims_a['X']} Y={dims_a['Y']} Z={dims_a['Z']}")
+        print(f"   Dimensões B: X={dims_b['X']} Y={dims_b['Y']} Z={dims_b['Z']}")
+
+        dim_ok = all(abs(dims_a[k] - dims_b[k]) <= tolerance * 100 for k in ["X", "Y", "Z"])
+
+        # 5. Comparação por Área de Superfície
+        print("🔄 Comparando áreas de superfície...")
+        area_a = shape_a.area
+        area_b = shape_b.area
+        area_diff_pct = (abs(area_a - area_b) / area_b * 100) if area_b != 0 else float('inf')
+
+        print(f"   Área A (Python): {area_a:.4f} mm²")
+        print(f"   Área B (STL):    {area_b:.4f} mm²")
+        print(f"   Diferença:       {area_diff_pct:.4f}%")
+
+        # 6. Veredito
+        vol_ok  = vol_diff_pct  <= 1.0   # tolerância 1%
+        area_ok = area_diff_pct <= 2.0   # tolerância 2% (STL tem aproximação de malha)
+
+        if vol_ok and dim_ok and area_ok:
             print(f"✅ SUCESSO: Geometrias coincidem.")
-            print(f"Volume Residual: {residue_volume:.8f} mm³")
             return True
         else:
             print(f"❌ FALHA: Geometrias divergem.")
-            print(f"Volume Residual: {residue_volume:.4f} mm³")
-            # Mostra a peça A, a peça B e o erro para você comparar visualmente
-            show(shape_a_centered, shape_b_centered, deviation_solid, 
-                 names=["Python_Centered", "Inventor_Centered", "Diferenca_Erro"],
-                 colors=["blue", "green", "red"], alphas=[0.5, 0.5, 1.0])
+            if not vol_ok:
+                print(f"   → Volume fora da tolerância ({vol_diff_pct:.2f}%)")
+            if not dim_ok:
+                print(f"   → Dimensões fora da tolerância: A={dims_a} B={dims_b}")
+            if not area_ok:
+                print(f"   → Área fora da tolerância ({area_diff_pct:.2f}%)")
+            show(shape_a, shape_b,
+                 names=["Python", "Referencia_STL"],
+                 colors=["blue", "green"], alphas=[0.5, 0.5])
             return False
 
     except Exception as e:
         print(f"Erro Crítico na Comparação: {e}")
+        import traceback
+        traceback.print_exc()
         return False

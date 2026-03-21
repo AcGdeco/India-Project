@@ -10,12 +10,12 @@ with BuildPart() as peca:
 
     # Sketch for the bottom face
     with BuildSketch(base_plane) as s1:
-        r1 = Rectangle(47, 129)
+        r1 = Rectangle(129, 47)
         chamfer(r1.vertices(), length=8.671)
     
     # Sketch for the top face of the loft
     with BuildSketch(loft_top_plane) as s2:
-        r2 = Rectangle(53, 135)
+        r2 = Rectangle(135, 53)
         chamfer(r2.vertices(), length=10.429)
 
     loft()
@@ -27,13 +27,13 @@ with BuildPart() as peca:
 
     with BuildSketch(loft_top_plane) as sk1:
         # External perimeter
-        Rectangle(53, 135)
+        Rectangle(135, 53)
         chamfer(vertices(), length=10.429) 
         
         # Internal perimeter (Subtraction to create the wall)
         with BuildSketch(mode=Mode.SUBTRACT):
             # 2mm offset on each side
-            Rectangle(53 - 4, 135 - 4)
+            Rectangle(135 - 4, 53 - 4)
             # Calculated chamfer length for constant 2mm thickness at 45 degrees
             chamfer(vertices(), length=9.258)
 
@@ -42,12 +42,12 @@ with BuildPart() as peca:
     # --- 3. SECOND WALL (1mm Internal Step) ---
     with BuildSketch(wall1_top_plane) as sk2:
         # Outer boundary of the second wall
-        Rectangle(53 - 2, 135 - 2)
+        Rectangle(135 - 2, 53 - 2)
         chamfer(vertices(), length=9.845)
         
         with BuildSketch(mode=Mode.SUBTRACT):
             # Inner boundary to maintain 1mm constant thickness
-            Rectangle(53 - 4, 135 - 4)
+            Rectangle(135 - 4, 53 - 4)
             chamfer(vertices(), length=9.258)
             
     extrude(amount=9.824)
@@ -56,33 +56,33 @@ with BuildPart() as peca:
     # Positioning cylinders for structural support or mounting points
     
     # Top Right Pillar
-    with Locations((13.5, 52.5, 3)):
+    with Locations((52.5, 13.5, 3)):
         Cylinder(radius=2.5, height=3, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    with Locations((13.5, 52.5, 6)):
+    with Locations((52.5, 13.5, 6)):
         Cylinder(radius=1, height=13.424, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
     # Top Left Pillar
-    with Locations((-11.5, 52.5, 3)):
+    with Locations((-52.5, 13.5, 3)):
         Cylinder(radius=2.5, height=3, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    with Locations((-11.5, 52.5, 6)):
+    with Locations((-52.5, 13.5, 6)):
         Cylinder(radius=1, height=13.424, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
     # Bottom Right Pillar
-    with Locations((13.5, -52.5, 3)):
+    with Locations((52.5, -11.5, 3)):
         Cylinder(radius=2.5, height=3, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    with Locations((13.5, -52.5, 6)):
+    with Locations((52.5, -11.5, 6)):
         Cylinder(radius=1, height=13.424, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
     # Bottom Left Pillar
-    with Locations((-11.5, -52.5, 3)):
+    with Locations((-52.5, -11.5, 3)):
         Cylinder(radius=2.5, height=3, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    with Locations((-11.5, -52.5, 6)):
+    with Locations((-52.5, -11.5, 6)):
         Cylinder(radius=1, height=13.424, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
     # Central Pillar
-    with Locations((-11.5, 0, 3)):
+    with Locations((0, -11.5, 3)):
         Cylinder(radius=4, height=3, align=(Align.CENTER, Align.CENTER, Align.MIN))
-    with Locations((-11.5, 0, 6)):
+    with Locations((0, -11.5, 6)):
         Cylinder(radius=2.5, height=13.424, align=(Align.CENTER, Align.CENTER, Align.MIN))
 
     # --- 5. ELLIPTICAL STRUCTURES ---
@@ -90,20 +90,20 @@ with BuildPart() as peca:
 
     # Positive Y Ellipse
     with BuildSketch(ellipse_plane) as s_elipse1:
-        with Locations((1, 38)):
-            Ellipse(9, 10.5)
+        with Locations((38,1)):
+            Ellipse(10.5, 9)
             with BuildSketch(mode=Mode.SUBTRACT):
-                with Locations((1, 38)):
-                    Ellipse(8, 9.5)
+                with Locations((38, 1)):
+                    Ellipse(9.5, 8)
     extrude(amount=3)
 
     # Negative Y Ellipse
     with BuildSketch(ellipse_plane) as s_elipse2:
-        with Locations((1, -38)):
-            Ellipse(9, 10.5)
+        with Locations((-38, 1)):
+            Ellipse(10.5, 9)
             with BuildSketch(mode=Mode.SUBTRACT):
-                with Locations((1, -38)):
-                    Ellipse(8, 9.5)
+                with Locations((-38,1)):
+                    Ellipse(9.5, 8)
     extrude(amount=3)
 
     # --- 6. SLOT SUBTRACTION (EXTRUDE CUT) ---
@@ -111,14 +111,11 @@ with BuildPart() as peca:
     slot_plane = Plane.XY.offset(4.6)
     
     with BuildSketch(slot_plane, mode=Mode.SUBTRACT) as s_cut:
-        with Locations((25.5, 0)):
-            Rectangle(2, 37.039)
+        with Locations((0, 25.5)):
+            Rectangle(37.039, 2)
     
     # Perforate the part 14.824mm upwards
     extrude(amount=14.824, mode=Mode.SUBTRACT)
-
-# 1. Aplica a rotação de 90 graus no eixo Z
-peca = peca.part.rotate(Axis.Z, 90)
 
 # Visualization in VS Code
 show(peca)
