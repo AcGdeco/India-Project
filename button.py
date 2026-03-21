@@ -1,5 +1,6 @@
 from build123d import *
 from ocp_vscode import show
+from validador import check_geometric_identity
 
 with BuildPart() as button:
     # Main cylindrical shaft
@@ -56,3 +57,6 @@ with BuildPart() as button:
 
 # Push the final geometry to the OCP Viewer
 show(button)
+
+# Optional: Validate against reference STL
+result = check_geometric_identity(button, "RetroPad - Button.stl")

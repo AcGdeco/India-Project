@@ -1,5 +1,6 @@
 from build123d import *
 from ocp_vscode import show
+from validador import check_geometric_identity
 
 with BuildPart() as peca:
     # --- 1. BASE BODY (LOFT) ---
@@ -123,3 +124,6 @@ show(peca)
 export_step(peca.part, "bottom_shell.step")
 
 print("Success! The file 'bottom_shell.step' has been created in your workspace.")
+
+# Validação (Lembre-se de girar o STL no Inventor também para bater)
+result = check_geometric_identity(peca, "RetroPad - Bottom_Shell.stl")
